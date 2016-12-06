@@ -1,0 +1,20 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="test.com.genesis.ui.SinglePostFragment">
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/vpPhotos"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/photo_height" />
+
+    <TextView
+        android:id="@+id/tvContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_normal"
+        tools:text="Some Text" />
+
+</LinearLayout>
