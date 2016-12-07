@@ -22,7 +22,7 @@ public class FbModel {
     }
 
     public Observable<PostsResponse> getPosts() {
-        return api.getPosts()
+        return api.getPosts("id,message,story,link,attachments")
                 .compose(new ErrorTransformer<PostsResponse>())
                 .subscribeOn(workScheduler)
                 .observeOn(observeScheduler);
