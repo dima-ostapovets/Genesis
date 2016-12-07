@@ -54,10 +54,10 @@ public class NetworkModule {
     @Provides
     public OkHttpClient createClient(IAuthRepository authRepository) {
         OkHttpClient client = new OkHttpClient();
+        client.interceptors().add(new AuthInterceptor(authRepository));
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
         interceptor.setLevel(BuildConfig.DEBUG ? HttpLoggingInterceptor.Level.BODY : HttpLoggingInterceptor.Level.NONE);
         client.interceptors().add(interceptor);
-        client.interceptors().add(new AuthInterceptor(authRepository));
         return client;
     }
 
