@@ -45,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
     @OnClick(R.id.btnLogin)
     void onLoginClick() {
         LoginManager.getInstance().logInWithReadPermissions(this,
-                Arrays.asList("email", "user_friends", "public_profile"));
+                Arrays.asList("email", "public_profile"));
     }
 
     @Override
