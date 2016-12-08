@@ -13,12 +13,11 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import test.com.genesis.App;
 import test.com.genesis.R;
 import test.com.genesis.pojo.Post;
 import test.com.genesis.ui.adapters.ImagesAdapter;
-import test.com.genesis.ui.adapters.presenter.SinglePostPresenter;
+import test.com.genesis.presenter.SinglePostPresenter;
 
 public class SinglePostFragment extends Fragment implements SinglePostPresenter.SinglePostView {
     public static final String POST = "post";

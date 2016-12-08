@@ -10,36 +10,43 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewPropertyAnimator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
-
-import retrofit.http.POST;
 
 /**
  * Created by dima on 08.12.16.
  */
 
-public class MagicView extends FrameLayout {
+public class FlipView extends FrameLayout {
 
-    public static final String TAG = MagicView.class.getName();
-    public static final int SLOP = 20;
+    public static final String TAG = FlipView.class.getName();
     private static final long ANIMATION_DURATION = 300;
     public static final int PREVIEW_COUNT = 2;
     private float lastX;
-    private ViewPager smallPager;
+    private ViewPager previewPager;
     private ViewPager fullPager;
     private View postView;
     private View galleryView;
     private Interpolator decelerateInterpolator = new DecelerateInterpolator();
-    private CurrView curView = CurrView.POST;
 
-    public MagicView(Context context) {
+    public State getState() {
+        return state;
+    }
+
+    private State state;
+
+    public void setListener(StateChangeListener listener) {
+        this.listener = listener;
+    }
+
+    private StateChangeListener listener;
+
+    public FlipView(Context context) {
         super(context);
     }
 
-    public MagicView(Context context, AttributeSet attrs) {
+    public FlipView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -52,17 +59,24 @@ public class MagicView extends FrameLayout {
     private void initViews() {
         postView = getChildAt(0);
         galleryView = getChildAt(1);
-        galleryView.setX(getWidth());
     }
 
-    public void setPagers(ViewPager smallPager, ViewPager fullPager) {
-        this.smallPager = smallPager;
+    public void setPagers(ViewPager previewPager, ViewPager fullPager) {
+        this.previewPager = previewPager;
         this.fullPager = fullPager;
     }
 
     @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        if (state == null){
+            setState(State.POST);
+        }
+    }
+
+    @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        if (smallPager == null || fullPager == null) {
+        if (previewPager == null || fullPager == null) {
             return false;
         }
         float x = ev.getRawX();
@@ -80,14 +94,14 @@ public class MagicView extends FrameLayout {
         float x = ev.getRawX();
         boolean isGesture = lastX - x > 0;
         lastX = ev.getX();
-        switch (curView) {
+        switch (state) {
             case POST:
-                if (smallPager.getAdapter() == null || smallPager.getAdapter().getCount() == 0)
+                if (previewPager.getAdapter() == null || previewPager.getAdapter().getCount() == 0)
                     return false;
                 Rect smallPagerrect = new Rect();
-                smallPager.getHitRect(smallPagerrect);
+                previewPager.getHitRect(smallPagerrect);
                 if (!smallPagerrect.contains((int) ev.getX(), (int) ev.getY())) return false;
-                if (smallPager.getCurrentItem() < PREVIEW_COUNT - 1)
+                if (previewPager.getCurrentItem() < PREVIEW_COUNT - 1)
                     return false;
                 break;
             case GALLERY:
@@ -108,7 +122,7 @@ public class MagicView extends FrameLayout {
                 return false;
             case MotionEvent.ACTION_MOVE:
                 handleMove(ev);
-                lastX = ev.getX();
+                lastX = x;
                 return true;
             case MotionEvent.ACTION_UP:
                 handleUp(ev);
@@ -120,7 +134,7 @@ public class MagicView extends FrameLayout {
 
     private void handleUp(MotionEvent event) {
         int half = getWidth() / 2;
-        switch (curView) {
+        switch (state) {
             case POST:
                 if (galleryView.getX() < half) {
                     performOpenGallery();
@@ -132,7 +146,7 @@ public class MagicView extends FrameLayout {
                 if (postView.getX() < half) {
                     performOpenPost();
                 } else {
-                    performCloseGallery();
+                    performClosePost();
                 }
                 break;
         }
@@ -142,7 +156,7 @@ public class MagicView extends FrameLayout {
         float x = ev.getRawX();
         float delta = x - lastX;
         Log.d(TAG, "x= " + ev.getX() + " delta= " + delta);
-        switch (curView) {
+        switch (state) {
             case POST:
                 if (galleryView.getX() <= 0) {
                     galleryView.setX(0);
@@ -151,8 +165,9 @@ public class MagicView extends FrameLayout {
                 galleryView.setX(galleryView.getX() + delta);
                 break;
             case GALLERY:
-                if (postView.getX() <= 0) {
-                    postView.setX(0);
+                if (galleryView.getX() >= 0 && delta > 0) {
+                    galleryView.setX(0);
+                    postView.setX(getWidth());
                     return;
                 }
                 postView.setX(postView.getX() + delta);
@@ -173,7 +188,7 @@ public class MagicView extends FrameLayout {
                 .setListener(new SimpleAnimatorListener() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        curView = CurrView.POST;
+                        setState(State.POST);
                     }
                 });
     }
@@ -185,30 +200,67 @@ public class MagicView extends FrameLayout {
                 .setListener(new SimpleAnimatorListener() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        curView = CurrView.GALLERY;
-                        postView.setX(getWidth());
+                        setState(State.GALLERY);
                     }
                 });
     }
 
     private void performOpenPost() {
-        ObjectAnimator animX = ObjectAnimator.ofFloat(postView, "x", 0);
-        ObjectAnimator animY = ObjectAnimator.ofFloat(galleryView, "x", -getWidth());
+        ObjectAnimator animPost = ObjectAnimator.ofFloat(postView, "x", 0);
+        ObjectAnimator animGallery = ObjectAnimator.ofFloat(galleryView, "x", -getWidth());
         AnimatorSet set = new AnimatorSet();
-        set.playTogether(animX, animY);
+        set.playTogether(animPost, animGallery);
         set.setInterpolator(decelerateInterpolator);
         set.setDuration(ANIMATION_DURATION);
         set.addListener(new SimpleAnimatorListener() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                curView = CurrView.POST;
+                setState(State.POST);
             }
         });
         set.start();
     }
 
-    enum CurrView {
+    private void performClosePost() {
+        ObjectAnimator animPost = ObjectAnimator.ofFloat(postView, "x", getWidth());
+        ObjectAnimator animGallery = ObjectAnimator.ofFloat(galleryView, "x", 0);
+        AnimatorSet set = new AnimatorSet();
+        set.playTogether(animPost, animGallery);
+        set.setInterpolator(decelerateInterpolator);
+        set.setDuration(ANIMATION_DURATION);
+        set.addListener(new SimpleAnimatorListener() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                setState(State.GALLERY);
+            }
+        });
+        set.start();
+    }
+
+    private void setState(State newState) {
+        switch (newState) {
+            case POST:
+                galleryView.setX(getWidth());
+                postView.setX(0);
+                break;
+            case GALLERY:
+                postView.setX(getWidth());
+                galleryView.setX(0);
+                break;
+        }
+        State lastState = state;
+        state = newState;
+        if (newState != lastState && listener != null) {
+            listener.onChanged(newState);
+        }
+    }
+
+    enum State {
         POST,
         GALLERY
+    }
+
+    public interface StateChangeListener {
+        void onChanged(State currView);
     }
 }

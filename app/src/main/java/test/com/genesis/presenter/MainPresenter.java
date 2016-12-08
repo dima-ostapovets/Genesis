@@ -1,4 +1,4 @@
-package test.com.genesis.ui.adapters.presenter;
+package test.com.genesis.presenter;
 
 import java.util.List;
 
@@ -11,7 +11,6 @@ import test.com.genesis.network.FbModel;
 import test.com.genesis.pojo.Post;
 import test.com.genesis.pojo.PostsResponse;
 import test.com.genesis.pojo.User;
-import test.com.genesis.ui.LceView;
 
 /**
  * Created by dima on 07.12.16.

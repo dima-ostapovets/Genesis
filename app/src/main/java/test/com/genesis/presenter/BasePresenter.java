@@ -1,4 +1,4 @@
-package test.com.genesis.ui.adapters.presenter;
+package test.com.genesis.presenter;
 
 import android.support.annotation.Nullable;
 

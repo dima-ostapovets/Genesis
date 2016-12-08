@@ -1,12 +1,8 @@
-package test.com.genesis.ui.adapters.presenter;
+package test.com.genesis.presenter;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import test.com.genesis.pojo.Attachment;
-import test.com.genesis.pojo.Attachments;
 import test.com.genesis.pojo.Post;
-import test.com.genesis.ui.LceView;
 import test.com.genesis.ui.SinglePostFragment;
 import test.com.genesis.utils.PostUtils;
 

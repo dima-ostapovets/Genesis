@@ -1,4 +1,4 @@
-package test.com.genesis.ui;
+package test.com.genesis.presenter;
 
 import java.util.List;
 

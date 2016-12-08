@@ -3,8 +3,8 @@ package test.com.genesis.di;
 import dagger.Module;
 import dagger.Provides;
 import test.com.genesis.network.FbModel;
-import test.com.genesis.ui.adapters.presenter.MainPresenter;
-import test.com.genesis.ui.adapters.presenter.SinglePostPresenter;
+import test.com.genesis.presenter.MainPresenter;
+import test.com.genesis.presenter.SinglePostPresenter;
 
 /**
  * Created by dima on 08.12.16.

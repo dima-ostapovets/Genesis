@@ -4,8 +4,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -26,7 +24,7 @@ import test.com.genesis.pojo.Post;
 import test.com.genesis.pojo.User;
 import test.com.genesis.ui.adapters.ImagesAdapter;
 import test.com.genesis.ui.adapters.PostsAdapter;
-import test.com.genesis.ui.adapters.presenter.MainPresenter;
+import test.com.genesis.presenter.MainPresenter;
 import test.com.genesis.utils.PostUtils;
 
 public class MainActivity extends AppCompatActivity implements MainPresenter.MainView {
@@ -42,12 +40,12 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
     @Bind(R.id.tvName)
     TextView tvName;
     @Bind(R.id.vFlip)
-    MagicView viewFlipper;
+    FlipView flipView;
     private MainPresenter mainPresenter;
     private PostsAdapter adapter;
     private ImagesAdapter galleryAdapter;
     private List<Post> posts;
-    private HashMap<String, ViewPager> pagerHashMap = new HashMap<>();
+    private HashMap<String, ViewPager> pagers = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,19 +58,28 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
         viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
-                resetGallery(position);
-                resetFlipper(position);
+                if (flipView.getState() == FlipView.State.POST) {
+                    resetGallery(position);
+                }
+                resetFlipView(position);
             }
         });
         viewPagerFull.setAdapter(galleryAdapter);
+        flipView.setListener(new FlipView.StateChangeListener() {
+            @Override
+            public void onChanged(FlipView.State state) {
+                if (state == FlipView.State.GALLERY) {
+                    viewPager.setCurrentItem(Math.min(adapter.getCount() - 1, viewPager.getCurrentItem() + 1), false);
+                }
+            }
+        });
         mainPresenter = App.app.getAppComponent().getMainPresenter();
         mainPresenter.attachView(this);
     }
 
-    private void resetFlipper(int position){
+    private void resetFlipView(int position) {
         Post post = posts.get(position);
-        resetGallery(position);
-        viewFlipper.setPagers(pagerHashMap.get(post.id), viewPagerFull);
+        flipView.setPagers(pagers.get(post.id), viewPagerFull);
     }
 
     private void resetGallery(int position) {
@@ -81,7 +88,8 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
 
     @OnClick(R.id.btnClose)
     void onCloseGalleryClick() {
-        viewFlipper.closeGallery();
+        flipView.closeGallery();
+        viewPager.setCurrentItem(Math.max(0, viewPager.getCurrentItem() - 1), false);
     }
 
     @Override
@@ -101,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
         adapter.setPosts(posts);
         if (posts.size() > 0) {
             resetGallery(0);
-            resetFlipper(0);
+            resetFlipView(0);
         }
     }
 
@@ -121,11 +129,11 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
                 .into(ivAvatar);
     }
 
-    public void addPager(String postId, ViewPager viewPager){
-        pagerHashMap.put(postId, viewPager);
+    public void addPager(String postId, ViewPager viewPager) {
+        pagers.put(postId, viewPager);
     }
 
-    public void removePager(String postId){
-        pagerHashMap.remove(postId);
+    public void removePager(String postId) {
+        pagers.remove(postId);
     }
 }
