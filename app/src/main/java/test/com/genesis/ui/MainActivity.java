@@ -13,17 +13,21 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.HashMap;
 import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import jp.wasabeef.picasso.transformations.CropCircleTransformation;
 import test.com.genesis.App;
 import test.com.genesis.R;
 import test.com.genesis.pojo.Post;
 import test.com.genesis.pojo.User;
+import test.com.genesis.ui.adapters.ImagesAdapter;
 import test.com.genesis.ui.adapters.PostsAdapter;
 import test.com.genesis.ui.adapters.presenter.MainPresenter;
+import test.com.genesis.utils.PostUtils;
 
 public class MainActivity extends AppCompatActivity implements MainPresenter.MainView {
 
@@ -41,17 +45,43 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
     MagicView viewFlipper;
     private MainPresenter mainPresenter;
     private PostsAdapter adapter;
+    private ImagesAdapter galleryAdapter;
+    private List<Post> posts;
+    private HashMap<String, ViewPager> pagerHashMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        viewFlipper.setPagers(viewPager, viewPagerFull);
         adapter = new PostsAdapter(getSupportFragmentManager());
         viewPager.setAdapter(adapter);
+        galleryAdapter = new ImagesAdapter(getSupportFragmentManager());
+        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                resetGallery(position);
+                resetFlipper(position);
+            }
+        });
+        viewPagerFull.setAdapter(galleryAdapter);
         mainPresenter = App.app.getAppComponent().getMainPresenter();
         mainPresenter.attachView(this);
+    }
+
+    private void resetFlipper(int position){
+        Post post = posts.get(position);
+        resetGallery(position);
+        viewFlipper.setPagers(pagerHashMap.get(post.id), viewPagerFull);
+    }
+
+    private void resetGallery(int position) {
+        galleryAdapter.setImages(PostUtils.getImages(posts.get(position).attachments));
+    }
+
+    @OnClick(R.id.btnClose)
+    void onCloseGalleryClick() {
+        viewFlipper.closeGallery();
     }
 
     @Override
@@ -67,7 +97,12 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
 
     @Override
     public void showContent(List<Post> posts) {
+        this.posts = posts;
         adapter.setPosts(posts);
+        if (posts.size() > 0) {
+            resetGallery(0);
+            resetFlipper(0);
+        }
     }
 
     @Override
@@ -84,5 +119,13 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
                 .centerCrop()
                 .transform(new CropCircleTransformation())
                 .into(ivAvatar);
+    }
+
+    public void addPager(String postId, ViewPager viewPager){
+        pagerHashMap.put(postId, viewPager);
+    }
+
+    public void removePager(String postId){
+        pagerHashMap.remove(postId);
     }
 }

@@ -13,13 +13,14 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import test.com.genesis.App;
 import test.com.genesis.R;
 import test.com.genesis.pojo.Post;
 import test.com.genesis.ui.adapters.ImagesAdapter;
 import test.com.genesis.ui.adapters.presenter.SinglePostPresenter;
 
-public class SinglePostFragment extends Fragment implements LceView<SinglePostFragment.Model> {
+public class SinglePostFragment extends Fragment implements SinglePostPresenter.SinglePostView {
     public static final String POST = "post";
     @Bind(R.id.tvContent)
     TextView tvContent;
@@ -27,6 +28,7 @@ public class SinglePostFragment extends Fragment implements LceView<SinglePostFr
     ViewPager vpPhotos;
     private ImagesAdapter adapter;
     private SinglePostPresenter presenter;
+    private Post post;
 
     public SinglePostFragment() {
     }
@@ -34,7 +36,7 @@ public class SinglePostFragment extends Fragment implements LceView<SinglePostFr
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Post post = getArguments().getParcelable(POST);
+        post = getArguments().getParcelable(POST);
         presenter = App.app.getAppComponent().getPostPresenter();
         presenter.setPost(post);
     }
@@ -50,12 +52,14 @@ public class SinglePostFragment extends Fragment implements LceView<SinglePostFr
         ButterKnife.bind(this, view);
         adapter = new ImagesAdapter(getChildFragmentManager());
         vpPhotos.setAdapter(adapter);
+        ((MainActivity) getActivity()).addPager(post.id, vpPhotos);
         presenter.attachView(this);
     }
 
     @Override
     public void onDestroyView() {
         presenter.detachView();
+        ((MainActivity) getActivity()).removePager(post.id);
         ButterKnife.unbind(this);
         super.onDestroyView();
     }
@@ -83,6 +87,11 @@ public class SinglePostFragment extends Fragment implements LceView<SinglePostFr
     @Override
     public void showError(String error) {
         //TODO
+    }
+
+    @Override
+    public void showPreviewPager(boolean show) {
+        vpPhotos.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     public static class Model {

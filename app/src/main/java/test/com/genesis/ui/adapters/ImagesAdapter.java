@@ -3,6 +3,7 @@ package test.com.genesis.ui.adapters;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,5 +36,10 @@ public class ImagesAdapter extends FragmentStatePagerAdapter {
     public void setImages(List<String> images) {
         this.images = images;
         notifyDataSetChanged();
+    }
+
+    @Override
+    public int getItemPosition(Object object) {
+        return POSITION_NONE;
     }
 }
