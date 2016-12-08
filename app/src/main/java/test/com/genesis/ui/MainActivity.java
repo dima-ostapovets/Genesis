@@ -29,12 +29,16 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
 
     @Bind(R.id.vPostPager)
     ViewPager viewPager;
+    @Bind(R.id.vpFull)
+    ViewPager viewPagerFull;
     @Bind(R.id.progress_bar)
     ProgressBar progressBar;
     @Bind(R.id.ivAvatar)
     ImageView ivAvatar;
     @Bind(R.id.tvName)
     TextView tvName;
+    @Bind(R.id.vFlip)
+    MagicView viewFlipper;
     private MainPresenter mainPresenter;
     private PostsAdapter adapter;
 
@@ -43,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        viewFlipper.setPagers(viewPager, viewPagerFull);
         adapter = new PostsAdapter(getSupportFragmentManager());
         viewPager.setAdapter(adapter);
         mainPresenter = new MainPresenter(App.app.getAppComponent().getFbModel());
