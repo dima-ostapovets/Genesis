@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
         viewFlipper.setPagers(viewPager, viewPagerFull);
         adapter = new PostsAdapter(getSupportFragmentManager());
         viewPager.setAdapter(adapter);
-        mainPresenter = new MainPresenter(App.app.getAppComponent().getFbModel());
+        mainPresenter = App.app.getAppComponent().getMainPresenter();
         mainPresenter.attachView(this);
     }
 

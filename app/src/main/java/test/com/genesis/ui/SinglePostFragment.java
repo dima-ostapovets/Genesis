@@ -13,12 +13,13 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import test.com.genesis.App;
 import test.com.genesis.R;
 import test.com.genesis.pojo.Post;
 import test.com.genesis.ui.adapters.ImagesAdapter;
 import test.com.genesis.ui.adapters.presenter.SinglePostPresenter;
 
-public class SinglePostFragment extends Fragment implements LceView<SinglePostFragment.Model>{
+public class SinglePostFragment extends Fragment implements LceView<SinglePostFragment.Model> {
     public static final String POST = "post";
     @Bind(R.id.tvContent)
     TextView tvContent;
@@ -34,7 +35,7 @@ public class SinglePostFragment extends Fragment implements LceView<SinglePostFr
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Post post = getArguments().getParcelable(POST);
-        presenter = new SinglePostPresenter();
+        presenter = App.app.getAppComponent().getPostPresenter();
         presenter.setPost(post);
     }
 
@@ -69,7 +70,7 @@ public class SinglePostFragment extends Fragment implements LceView<SinglePostFr
 
     @Override
     public void showProgress(boolean show) {
-
+        //TODO
     }
 
     @Override
@@ -81,10 +82,10 @@ public class SinglePostFragment extends Fragment implements LceView<SinglePostFr
 
     @Override
     public void showError(String error) {
-
+        //TODO
     }
 
-    public static class Model{
+    public static class Model {
         public Post post;
         public List<String> images;
 
