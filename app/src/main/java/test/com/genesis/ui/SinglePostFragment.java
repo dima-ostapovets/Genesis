@@ -27,7 +27,7 @@ public class SinglePostFragment extends Fragment implements SinglePostPresenter.
     ViewPager vpPhotos;
     private ImagesAdapter adapter;
     private SinglePostPresenter presenter;
-    private Post post;
+    private String postId;
 
     public SinglePostFragment() {
     }
@@ -35,7 +35,8 @@ public class SinglePostFragment extends Fragment implements SinglePostPresenter.
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        post = getArguments().getParcelable(POST);
+        Post post = getArguments().getParcelable(POST);
+        postId = post.id;
         presenter = App.app.getAppComponent().getPostPresenter();
         presenter.setPost(post);
     }
@@ -51,14 +52,14 @@ public class SinglePostFragment extends Fragment implements SinglePostPresenter.
         ButterKnife.bind(this, view);
         adapter = new ImagesAdapter(getChildFragmentManager());
         vpPhotos.setAdapter(adapter);
-        ((MainActivity) getActivity()).addPager(post.id, vpPhotos);
+        ((MainActivity) getActivity()).addPager(postId, vpPhotos);
         presenter.attachView(this);
     }
 
     @Override
     public void onDestroyView() {
         presenter.detachView();
-        ((MainActivity) getActivity()).removePager(post.id);
+        ((MainActivity) getActivity()).removePager(postId);
         ButterKnife.unbind(this);
         super.onDestroyView();
     }

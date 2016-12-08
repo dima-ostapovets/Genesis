@@ -30,8 +30,8 @@ import test.com.genesis.utils.PostUtils;
 public class MainActivity extends AppCompatActivity implements MainPresenter.MainView {
 
     @Bind(R.id.vPostPager)
-    ViewPager viewPager;
-    @Bind(R.id.vpFull)
+    ViewPager vpPosts;
+    @Bind(R.id.vpGallery)
     ViewPager viewPagerFull;
     @Bind(R.id.progress_bar)
     ProgressBar progressBar;
@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
     @Bind(R.id.vFlip)
     FlipView flipView;
     private MainPresenter mainPresenter;
-    private PostsAdapter adapter;
+    private PostsAdapter postsAdapter;
     private ImagesAdapter galleryAdapter;
     private List<Post> posts;
     private HashMap<String, ViewPager> pagers = new HashMap<>();
@@ -52,10 +52,10 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        adapter = new PostsAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(adapter);
+        postsAdapter = new PostsAdapter(getSupportFragmentManager());
+        vpPosts.setAdapter(postsAdapter);
         galleryAdapter = new ImagesAdapter(getSupportFragmentManager());
-        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+        vpPosts.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
                 if (flipView.getState() == FlipView.State.POST) {
@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
             @Override
             public void onChanged(FlipView.State state) {
                 if (state == FlipView.State.GALLERY) {
-                    viewPager.setCurrentItem(Math.min(adapter.getCount() - 1, viewPager.getCurrentItem() + 1), false);
+                    vpPosts.setCurrentItem(Math.min(postsAdapter.getCount() - 1, vpPosts.getCurrentItem() + 1), false);
                 }
             }
         });
@@ -89,13 +89,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
     @OnClick(R.id.btnClose)
     void onCloseGalleryClick() {
         flipView.closeGallery();
-        viewPager.setCurrentItem(Math.max(0, viewPager.getCurrentItem() - 1), false);
-    }
-
-    @Override
-    protected void onDestroy() {
-        mainPresenter.detachView();
-        super.onDestroy();
+        vpPosts.setCurrentItem(Math.max(0, vpPosts.getCurrentItem() - 1), false);
     }
 
     @Override
@@ -106,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
     @Override
     public void showContent(List<Post> posts) {
         this.posts = posts;
-        adapter.setPosts(posts);
+        postsAdapter.setPosts(posts);
         if (posts.size() > 0) {
             resetGallery(0);
             resetFlipView(0);
@@ -115,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
 
     @Override
     public void showError(String error) {
-        Snackbar.make(viewPager, error, Snackbar.LENGTH_LONG).show();
+        Snackbar.make(vpPosts, error, Snackbar.LENGTH_LONG).show();
     }
 
     @Override
@@ -135,5 +129,11 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
 
     public void removePager(String postId) {
         pagers.remove(postId);
+    }
+
+    @Override
+    protected void onDestroy() {
+        mainPresenter.detachView();
+        super.onDestroy();
     }
 }

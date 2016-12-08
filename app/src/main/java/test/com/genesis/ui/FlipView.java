@@ -25,21 +25,11 @@ public class FlipView extends FrameLayout {
     public static final int PREVIEW_COUNT = 2;
     private float lastX;
     private ViewPager previewPager;
-    private ViewPager fullPager;
+    private ViewPager galleryPager;
     private View postView;
     private View galleryView;
     private Interpolator decelerateInterpolator = new DecelerateInterpolator();
-
-    public State getState() {
-        return state;
-    }
-
     private State state;
-
-    public void setListener(StateChangeListener listener) {
-        this.listener = listener;
-    }
-
     private StateChangeListener listener;
 
     public FlipView(Context context) {
@@ -48,6 +38,14 @@ public class FlipView extends FrameLayout {
 
     public FlipView(Context context, AttributeSet attrs) {
         super(context, attrs);
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public void setListener(StateChangeListener listener) {
+        this.listener = listener;
     }
 
     @Override
@@ -63,20 +61,20 @@ public class FlipView extends FrameLayout {
 
     public void setPagers(ViewPager previewPager, ViewPager fullPager) {
         this.previewPager = previewPager;
-        this.fullPager = fullPager;
+        this.galleryPager = fullPager;
     }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        if (state == null){
+        if (state == null) {
             setState(State.POST);
         }
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        if (previewPager == null || fullPager == null) {
+        if (previewPager == null || galleryPager == null) {
             return false;
         }
         float x = ev.getRawX();
@@ -91,6 +89,7 @@ public class FlipView extends FrameLayout {
     }
 
     private boolean interceptMove(MotionEvent ev) {
+        //TODO use velocityTracker to handle fling
         float x = ev.getRawX();
         boolean isGesture = lastX - x > 0;
         lastX = ev.getX();
@@ -98,14 +97,15 @@ public class FlipView extends FrameLayout {
             case POST:
                 if (previewPager.getAdapter() == null || previewPager.getAdapter().getCount() == 0)
                     return false;
-                Rect smallPagerrect = new Rect();
-                previewPager.getHitRect(smallPagerrect);
-                if (!smallPagerrect.contains((int) ev.getX(), (int) ev.getY())) return false;
+                int[] location = new int[2];
+                previewPager.getLocationOnScreen(location);
+                Rect previewPagerrect = new Rect(location[0], location[1], location[0] + previewPager.getWidth(), location[1] + previewPager.getHeight());
+                if (!previewPagerrect.contains((int) ev.getRawX(), (int) ev.getRawY())) return false;
                 if (previewPager.getCurrentItem() < PREVIEW_COUNT - 1)
                     return false;
                 break;
             case GALLERY:
-                if (fullPager.getCurrentItem() < fullPager.getAdapter().getCount() - 1) {
+                if (galleryPager.getCurrentItem() < galleryPager.getAdapter().getCount() - 1) {
                     return false;
                 }
                 break;
